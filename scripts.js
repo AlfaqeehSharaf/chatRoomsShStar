@@ -20,29 +20,26 @@ function getRoomId() {
     return urlParams.get('room') || 'public';
 }
 
-// جلب الرسائل من Firebase
+// جلب الرسائل المخزنة من التخزين المحلي
 function loadMessages() {
     const roomId = getRoomId();
+    const messages = JSON.parse(localStorage.getItem(roomId)) || [];
     const chatBox = document.getElementById('chat-box');
-    const messagesRef = firebase.database().ref('chats/' + roomId);
-
-    messagesRef.on('value', (snapshot) => {
-        const messages = snapshot.val() || [];
-        chatBox.innerHTML = Object.values(messages).map(msg => `<div>${msg}</div>`).join('');
-        chatBox.scrollTop = chatBox.scrollHeight;
-    });
+    chatBox.innerHTML = messages.map(msg => `<div>${msg}</div>`).join('');
+    chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// إرسال رسالة وتخزينها في Firebase
+// إرسال رسالة وتخزينها في التخزين المحلي
 function sendMessage() {
     const messageInput = document.getElementById('message-input');
     const message = messageInput.value.trim();
     if (message) {
         const roomId = getRoomId();
-        const messagesRef = firebase.database().ref('chats/' + roomId);
-
-        messagesRef.push(message);
+        const messages = JSON.parse(localStorage.getItem(roomId)) || [];
+        messages.push(message);
+        localStorage.setItem(roomId, JSON.stringify(messages));
         messageInput.value = '';
+        loadMessages();
     }
 }
 
